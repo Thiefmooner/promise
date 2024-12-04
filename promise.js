@@ -20,7 +20,13 @@ class MyPromise {
             const { onFulfilled, onRejected, resolve, reject } = this.#handlers.shift()
             if (this.#state === FULFILLED) {
                 if (typeof onFulfilled === 'function') {//检察then的第一个参数是不是函数
-                    onFulfilled(this.#result)
+                    try {
+                        const data = onFulfilled(this.#result)
+                        resolve(data)
+                    }
+                    catch (err) {
+                        reject(err)
+                    }
                 }
                 else {
                     resolve(this.#result)//如果回调不是函数
@@ -28,7 +34,13 @@ class MyPromise {
             }
             else {
                 if (typeof onRejected === 'function') {//检察then的第一个参数是不是函数
-                    onRejected(this.#result)
+                    try {
+                        const data = onRejected(this.#result)
+                        resolve(data)
+                    }
+                    catch (err) {
+                        reject(err)
+                    }
                 }
                 else {
                     reject(this.#result)//如果回调不是函数
