@@ -15,19 +15,36 @@ class MyPromise {
         this.#run()
     }
 
+    #isPromiseLike(value) {
+        return false
+    }
+
+    #runMicroTask(fn) {
+        setTimeout(fn, 0)
+    }
+
     #runone(callback, resolve, reject) {
-        if (typeof callback !== 'function') {
-            const settled = this.#state === FULFILLED ? resolve : reject
-            settled(this.#result)
-            return
-        }
-        try {
-            const data = callback(this.#result)
-            resolve(data)
-        }
-        catch (err) {
-            reject(err)
-        }
+        this.#runMicroTask(() => {
+            //对应回调不是函数的情况
+            if (typeof callback !== 'function') {
+                const settled = this.#state === FULFILLED ? resolve : reject
+                settled(this.#result)
+                return
+            }
+            //对应回调是函数的情况
+            try {
+                const data = callback(this.#result)
+                if (this.#isPromiseLike(data)) {
+                    data.then(resolve, reject)
+                }
+                else {
+                    resolve(data)
+                }
+            }
+            catch (err) {
+                reject(err)
+            }
+        })
     }
 
     #run() {
@@ -87,8 +104,8 @@ p.then(
         console.log('promise失败1', err)
         return 456
     }
-).then((data)=>{
-    console.log('ok',data)
+).then((data) => {
+    console.log('ok', data)
 })
 
 
