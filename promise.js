@@ -14,40 +14,35 @@ class MyPromise {
         this.#result = result
         this.#run()
     }
+
+    #runone(callback, resolve, reject) {
+        if (typeof callback !== 'function') {
+            const settled = this.#state === FULFILLED ? resolve : reject
+            settled(this.#result)
+            return
+        }
+        try {
+            const data = callback(this.#result)
+            resolve(data)
+        }
+        catch (err) {
+            reject(err)
+        }
+    }
+
     #run() {
         if (this.#state === PENDING) return //挂起就啥也别做
         while (this.#handlers.length) {
             const { onFulfilled, onRejected, resolve, reject } = this.#handlers.shift()
             if (this.#state === FULFILLED) {
-                if (typeof onFulfilled === 'function') {//检察then的第一个参数是不是函数
-                    try {
-                        const data = onFulfilled(this.#result)
-                        resolve(data)
-                    }
-                    catch (err) {
-                        reject(err)
-                    }
-                }
-                else {
-                    resolve(this.#result)//如果回调不是函数
-                }
+                this.#runone(onFulfilled, resolve, reject)
             }
             else {
-                if (typeof onRejected === 'function') {//检察then的第一个参数是不是函数
-                    try {
-                        const data = onRejected(this.#result)
-                        resolve(data)
-                    }
-                    catch (err) {
-                        reject(err)
-                    }
-                }
-                else {
-                    reject(this.#result)//如果回调不是函数
-                }
+                this.#runone(onRejected, resolve, reject)
             }
         }
     }
+
     //then有两个任务，添加数组，执行run
     then(onFulfilled, onRejected) {
         return new MyPromise((resolve, reject) => {
@@ -61,6 +56,7 @@ class MyPromise {
         })
 
     }
+
     /**构造器 */
     constructor(executor) {
         const resolve = (data) => {
@@ -79,48 +75,22 @@ class MyPromise {
     }
 }
 
-
 const p = new MyPromise((resolve, reject) => {
     setTimeout(() => {
-        reject(1234)
+        reject(123)
     }, 1000)
 })
 
 p.then(
-    (res) => {
-        console.log('promise完成1', res)
-    },
+    null,
     (err) => {
         console.log('promise失败1', err)
+        return 456
     }
-)
+).then((data)=>{
+    console.log('ok',data)
+})
 
-p.then(
-    (res) => {
-        console.log('promise完成2', res)
-    },
-    (err) => {
-        console.log('promise失败2', err)
-    }
-)
-
-p.then(
-    (res) => {
-        console.log('promise完成3', res)
-    },
-    (err) => {
-        console.log('promise失败3', err)
-    }
-)
-
-p.then(
-    (res) => {
-        console.log('promise完成4', res)
-    },
-    (err) => {
-        console.log('promise失败4', err)
-    }
-)
 
 
 /**
