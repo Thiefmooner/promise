@@ -8,37 +8,37 @@ class MyPromise {
     #result = undefined
     #handlers = []//用来存储 onFulfilled, onRejected, resolve, reject，为啥是数组呢，因为用户可能多次调用then
 
-    #changeState(state,result) {//#私有方法
-        if(this.#state !== PENDING) return //防止promise执行两次
+    #changeState(state, result) {//#私有方法
+        if (this.#state !== PENDING) return //防止promise执行两次
         this.#state = state
         this.#result = result
         this.#run()
     }
-    #run () {
-        if(this.#state === PENDING) return //挂起就啥也别做
-        while(this.#handlers.length){
+    #run() {
+        if (this.#state === PENDING) return //挂起就啥也别做
+        while (this.#handlers.length) {
             const { onFulfilled, onRejected, resolve, reject } = this.#handlers.shift()
-            if(this.#state === FULFILLED){
-                if(typeof onFulfilled === 'function'){//检察then的第一个参数是不是函数
+            if (this.#state === FULFILLED) {
+                if (typeof onFulfilled === 'function') {//检察then的第一个参数是不是函数
                     onFulfilled(this.#result)
                 }
-                else{
+                else {
                     resolve(this.#result)//如果回调不是函数
                 }
             }
-            else{
-                if(typeof onRejected === 'function'){//检察then的第一个参数是不是函数
+            else {
+                if (typeof onRejected === 'function') {//检察then的第一个参数是不是函数
                     onRejected(this.#result)
                 }
-                else{
+                else {
                     reject(this.#result)//如果回调不是函数
                 }
             }
         }
     }
     //then有两个任务，添加数组，执行run
-    then(onFulfilled, onRejected){
-        return new MyPromise((resolve,reject) => {
+    then(onFulfilled, onRejected) {
+        return new MyPromise((resolve, reject) => {
             this.#handlers.push({
                 onFulfilled,
                 onRejected,
@@ -51,62 +51,62 @@ class MyPromise {
     }
     /**构造器 */
     constructor(executor) {
-        const resolve = (data) =>{
-            this.#changeState(FULFILLED,data)
+        const resolve = (data) => {
+            this.#changeState(FULFILLED, data)
         }
         const reject = (reason) => {
-            this.#changeState(REJECTED,reason)
+            this.#changeState(REJECTED, reason)
         }
         //异常放在try-catch里面捕获，就直接用reject处理他
-        try{
-            executor(resolve,reject)//只能捕获同步任务的错误，异步任务的错误捕获不到（官方问题）
+        try {
+            executor(resolve, reject)//只能捕获同步任务的错误，异步任务的错误捕获不到（官方问题）
         }
-        catch(err){
+        catch (err) {
             reject(err)
         }
     }
 }
 
 
-const p = new MyPromise((resolve,reject)=>{
-    setTimeout(()=>{
+const p = new MyPromise((resolve, reject) => {
+    setTimeout(() => {
         reject(1234)
-    },1000)
+    }, 1000)
 })
 
 p.then(
-    (res)=>{
-        console.log('promise完成1',res)
+    (res) => {
+        console.log('promise完成1', res)
     },
-    (err)=>{
-        console.log('promise失败1',err)
+    (err) => {
+        console.log('promise失败1', err)
     }
 )
 
 p.then(
-    (res)=>{
-        console.log('promise完成2',res)
+    (res) => {
+        console.log('promise完成2', res)
     },
-    (err)=>{
-        console.log('promise失败2',err)
+    (err) => {
+        console.log('promise失败2', err)
     }
 )
 
 p.then(
-    (res)=>{
-        console.log('promise完成3',res)
+    (res) => {
+        console.log('promise完成3', res)
     },
-    (err)=>{
-        console.log('promise失败3',err)
+    (err) => {
+        console.log('promise失败3', err)
     }
 )
 
 p.then(
-    (res)=>{
-        console.log('promise完成4',res)
+    (res) => {
+        console.log('promise完成4', res)
     },
-    (err)=>{
-        console.log('promise失败4',err)
+    (err) => {
+        console.log('promise失败4', err)
     }
 )
 
