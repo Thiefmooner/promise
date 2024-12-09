@@ -14,8 +14,17 @@ class MyPromise {
         this.#result = result
         this.#run()
     }
-
+    
+    /**
+     * @function #isPromiseLike 
+     * @description 实现一个判断promise的方法
+     * @param {function} value value可以是函数和对象
+     * @returns {boolean} 判断是否为promise的结果
+     */
     #isPromiseLike(value) {
+        if(value !== null && (typeof value === 'function' ||  typeof value ==='object')) {
+            return typeof value.then === 'function'
+        }
         return false
     }
 
